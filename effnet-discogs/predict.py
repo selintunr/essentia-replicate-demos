@@ -61,13 +61,13 @@ class Predictor(BasePredictor):
             description="YouTube URL to process (overrides audio input)",
             default=None,
         ),
-        top_n: int = Input(description="Top n music styles to show", default=10),
+        top_n: int = Input(description="Top n music styles to show", default=1),
         output_format: str = Input(
             description="Output either a bar chart visualization or a JSON blob",
-            default="Visualization",
+            default="JSON",
             choices=["Visualization", "JSON"],
         ),
-    ) -> Path:
+    ) -> str:
         """Run a single prediction on the model"""
 
         assert audio or url, "Specify either an audio filename or a YouTube url"
@@ -97,10 +97,19 @@ class Predictor(BasePredictor):
         activations_mean = np.mean(activations, axis=0)
 
         if output_format == "JSON":
-            out_path = Path(tempfile.mkdtemp()) / "out.json"
-            with open(out_path, "w") as f:
-                json.dump(dict(zip(labels, activations_mean.tolist())), f)
-            return out_path
+            #out_path = Path(tempfile.mkdtemp()) / "out.json"
+            #with open(out_path, "w") as f:
+            #    json.dump(dict(zip(labels, activations_mean.tolist())), f)
+            #return out_path
+            result_dict = dict(zip(labels, activations_mean.tolist()))
+            #result_json = json.dumps(result_dict)
+            sorted_genres = sorted(result_dict.items(), key=lambda x: x[1], reverse=True)
+            top_genre = sorted_genres[0][0]                
+            genre_primary, genre_full = map(str.strip, top_genre.split("---"))
+            result_json = {"genre_primary": genre_primary, "genre_full": genre_full}
+
+            return genre_primary  # Return string instead of path
+        
 
         print("plotting...")
         top_n_idx = np.argsort(activations_mean)[::-1][:top_n]
@@ -153,7 +162,7 @@ class Predictor(BasePredictor):
             audio.unlink()
 
         print("done!")
-        return out_path
+        return genre_primary  # Return string instead of path
 
     def _download(self, url, ext="wav"):
         """Download a YouTube URL in the specified format to a temporal directory"""

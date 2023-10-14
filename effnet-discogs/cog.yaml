@@ -25,6 +25,7 @@ build:
     - curl -L -o models/genre_discogs400-discogs-effnet-1.pb "https://essentia.upf.edu/models/classification-heads/genre_discogs400/genre_discogs400-discogs-effnet-1.pb"
     - "echo env is ready!"
     # - "echo another command if needed"
+    - sleep 1 &
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

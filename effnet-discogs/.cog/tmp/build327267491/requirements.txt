@@ -1,0 +1,2 @@
+essentia-tensorflow==2.1b6.dev1034
+seaborn==0.11
